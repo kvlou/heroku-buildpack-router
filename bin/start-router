@@ -14,6 +14,8 @@ run-router() {
   declare sentinel=/tmp/router-buildpack-wait
   declare -A pids signals
 
+  env
+
   config-gen
 
   # Use named pipe to detect exit of any subprocess.
