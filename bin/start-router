@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 main() {
-  if -z "${HEROKU_ROUTER_HTTP_PORT}"; then
+  if [ -z "${HEROKU_ROUTER_HTTP_PORT}" ]; then
     at router-disabled
     exec "$@"
   fi
