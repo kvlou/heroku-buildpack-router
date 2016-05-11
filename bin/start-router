@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 main() {
-  if ! is-enabled "${HEROKU_ROUTER_HTTP_PORT:-1}"; then
+  if -z "${HEROKU_ROUTER_HTTP_PORT}"; then
     at router-disabled
     exec "$@"
   fi
@@ -135,12 +135,6 @@ app-start() {
 
 at() {
   echo "buildpack=router at=$*"
-}
-
-is-enabled() {
-  ( shopt -s extglob nocasematch
-    [[ $1 == @(1|true|yes|on) ]]
-  )
 }
 
 [[ "$0" != "$BASH_SOURCE" ]] || main "$@"
