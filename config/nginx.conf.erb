@@ -1,0 +1,76 @@
+daemon off;
+worker_processes <%= ENV['NGINX_WORKERS'] || 4 %>;
+worker_rlimit_nofile 65535;
+
+events {
+	worker_connections  8192;
+	multi_accept on;
+}
+
+
+http {
+	default_type  application/octet-stream;
+
+	log_format	l2met 'measure#nginx.service=$request_time request_id=$http_x_request_id';
+	access_log	/dev/stderr l2met;
+	error_log	/dev/stderr;
+
+	sendfile	on;
+	include		mime.types;
+
+	upstream dyno_http {
+		server localhost:<%= ENV['PORT'] %> fail_timeout=0;
+		keepalive 8192;
+	}
+	
+	server {
+		listen	   <%= ENV['HEROKU_ROUTER_HTTP_PORT'] || 5001 %> proxy_protocol;
+		server_name  _;
+		
+		location / {
+			proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+			proxy_set_header Host $http_host;
+			proxy_redirect off;
+			proxy_pass http://dyno_http;
+		}
+	}
+
+
+<% if ENV['SERVER_CERT'] && ENV['SERVER_KEY'] %>
+	upstream dyno_https {
+		server localhost:<%= ENV['PORT'] %> fail_timeout=0;
+		keepalive 8192;
+	}
+
+	server {
+		listen  <%= ENV['HEROKU_ROUTER_HTTPS_PORT'] || 5000 %> proxy_protocol ssl;
+		server_name _;
+		
+		ssl_certificate	 cert.pem;
+		ssl_certificate_key cert.key;
+
+		ssl_certificate	  cert.pem;
+		ssl_certificate_key  cert.key;
+
+		ssl_session_cache	shared:SSL:1m;
+		ssl_session_timeout  5m;
+
+		ssl_ciphers  HIGH:!aNULL:!MD5;
+		ssl_prefer_server_ciphers  on;
+		
+		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+		proxy_set_header Host $http_host;
+		proxy_redirect off;				 
+		proxy_pass http://dyno_https;
+	}
+<% end %>
+	server {
+		listen <%= ENV['HEROKU_ROUTER_HEALTHCHECK_PORT'] || 6000 %>;
+		server_name _;
+		access_log off;
+		
+		location = /health {
+			return 200;
+		}
+	}
+}
