@@ -14,7 +14,7 @@ http {
     access_log	off;
 <% else -%>
 	uuid4 $unique_request_id;
-	log_format	l2met	'source=buildpack-router method=$request_method path="$request_uri" host=$host request_id=$unique_request_id measure#connect=${upstream_connect_time}s measure#service=${upstream_response_time}s status=$status sample#bytes=$bytes_sent';
+	log_format	l2met	'source=buildpack-router method=$request_method path="$request_uri" host=$host unique#request_id=$unique_request_id measure#connect=${upstream_connect_time}s measure#service=${upstream_response_time}s status=$status sample#bytes=$bytes_sent';
 	access_log	/dev/stderr l2met;
 <% end -%>
 	error_log	/dev/stderr;
