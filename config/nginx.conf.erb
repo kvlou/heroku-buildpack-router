@@ -2,7 +2,7 @@ daemon off;
 worker_processes auto;
 
 events {
-	worker_connections 8192;
+	worker_connections 6144;
 	use epoll;
 	multi_accept on;
 }
@@ -28,7 +28,7 @@ http {
 
 	upstream dyno_http {
 		server 127.0.0.1:<%= ENV['PORT'] %>;
-		keepalive 8192;
+		keepalive 6144;
 	}
 	
 	server {
