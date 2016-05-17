@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 main() {
-  if [ -z "${HEROKU_ROUTER_HTTP_PORT}" ]; then
+  if ! is-enabled "${HEROKU_ROUTER_HTTP_PORT}"; then
     at router-disabled
     exec "$@"
   fi
@@ -14,13 +14,19 @@ run-router() {
   declare sentinel=/tmp/router-buildpack-wait
   declare -A pids signals
 
-  env
-
-  config-gen
-
   # Use named pipe to detect exit of any subprocess.
   rm -f "$sentinel"
   mkfifo "$sentinel"
+
+  if ! is-enabled "${PORT}"; then
+    at port-assignment-start
+    declare -x PORT=8080
+    at "port-assignment-end port=${PORT}"
+  else
+    at "port-assignment-disabled port=${PORT}"
+  fi
+
+  config-gen
 
   # Start processes.
   aux-start router SIGINT nginx -p . -c config/nginx.conf
@@ -66,7 +72,7 @@ run-router() {
 config-gen() {
   # Generate config files
   at config-gen-start
-  erb config/nginx.conf.erb > config/nginx.conf
+  erb -T '-' config/nginx.conf.erb > config/nginx.conf
   at config-gen-end
 }
 
@@ -133,6 +139,10 @@ app-start() {
   ) &
 
   at "$name-launched pid=$!"
+}
+
+is-enabled() {
+  [[ -n "$1" ]]
 }
 
 at() {
