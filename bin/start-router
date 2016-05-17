@@ -26,6 +26,15 @@ run-router() {
     at "port-assignment-disabled port=${PORT}"
   fi
 
+  address=$(ip -4 address show eth0|awk '/inet/ {print  $2}'|cut -f1 -d'/')
+  if ! is-enabled "${address}"; then
+    at set-listen-address-disabled
+  else
+    at set-listen-address-start
+    declare -x BUILDPACK_ROUTER_LISTEN_ADDRESS=${address}
+    at "set-listen-address-end address=${BUILDPACK_ROUTER_LISTEN_ADDRESS}"
+  fi
+
   config-gen
 
   # Start processes.
