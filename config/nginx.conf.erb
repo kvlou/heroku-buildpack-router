@@ -2,7 +2,7 @@ daemon off;
 worker_processes auto;
 
 events {
-	worker_connections 6144;
+	worker_connections 8192;
 	use epoll;
 	multi_accept on;
 }
@@ -28,7 +28,7 @@ http {
 
 	upstream dyno_http {
 		server 127.0.0.1:<%= ENV['PORT'] %>;
-		keepalive 6144;
+		keepalive 8192;
 	}
 	
 	server {
@@ -36,6 +36,7 @@ http {
 		server_name  _;
 		
 		location / {
+			proxy_bind <%= ENV['BUILDPACK_ROUTER_LISTEN_ADDRESS'] || 'off' %>;
 			proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 			proxy_set_header Host $http_host;
 			proxy_redirect off;
@@ -69,6 +70,7 @@ http {
 		ssl_ciphers  HIGH:!aNULL:!MD5;
 		ssl_prefer_server_ciphers  on;
 		
+		proxy_bind <%= ENV['BUILDPACK_ROUTER_LISTEN_ADDRESS'] || 'off' %>;
 		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 		proxy_set_header Host $http_host;
 		proxy_redirect off;				
