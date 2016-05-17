@@ -2,7 +2,7 @@ daemon off;
 worker_processes auto;
 
 events {
-	worker_connections 24576;
+	worker_connections 32768;
 	use epoll;
 	multi_accept on;
 }
