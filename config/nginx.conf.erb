@@ -82,6 +82,10 @@ http {
 		server_name _;
 		access_log off;
 		
+		location = /status {
+			stub_status on;
+		}
+		
 		location = /health {
 			return 200;
 		}
