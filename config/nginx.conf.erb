@@ -24,7 +24,7 @@ http {
 	include		mime.types;
 	
 	keepalive_requests 1000000;
-	keepalive_timeout  30s;
+	keepalive_timeout  55s;
 
 	upstream dyno_http {
 		server 127.0.0.1:<%= ENV['PORT'] %>;
