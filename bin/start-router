@@ -35,6 +35,12 @@ run-router() {
     at "set-listen-address-end address=${BUILDPACK_ROUTER_LISTEN_ADDRESS}"
   fi
 
+  if ! is-enabled "${SERVER_KEY}"; then
+    at config-ssl-disabled
+  else
+    config-ssl
+  fi
+
   config-gen
 
   # Start processes.
@@ -76,6 +82,16 @@ run-router() {
     at "kill-aux name=$name pid=${pids[$name]} signal=${signals[$name]}"
     kill -SIGHUP "${pids[$name]}"
   done
+}
+
+config-ssl() {
+  # Load SSL certificate and key into files
+  at config-ssl-start
+  rm -f config/server.key config/server.cert
+  echo "${SERVER_KEY}" > config/server.key
+  echo "${SERVER_CERT}" > config/server.cert
+  chmod 600 config/server.key config/server.cert
+  at config-ssl-end
 }
 
 config-gen() {

@@ -50,7 +50,7 @@ http {
 
 <% if ENV['SERVER_CERT'] && ENV['SERVER_KEY'] -%>
 	upstream dyno_https {
-		server 127.0.0.1:<%= ENV['PORT'] %> fail_timeout=0;
+		server 127.0.0.1:<%= ENV['PORT'] %>;
 		keepalive 8192;
 	}
 
@@ -58,11 +58,8 @@ http {
 		listen <%= ENV['BUILDPACK_ROUTER_LISTEN_ADDRESS'] || '0.0.0.0' %>:<%= ENV['HEROKU_ROUTER_HTTPS_PORT'] || 5000 %> proxy_protocol ssl;
 		server_name _;
 		
-		ssl_certificate	 cert.pem;
-		ssl_certificate_key cert.key;
-
-		ssl_certificate	  cert.pem;
-		ssl_certificate_key  cert.key;
+		ssl_certificate	 server.cert;
+		ssl_certificate_key server.key;
 
 		ssl_session_cache	shared:SSL:1m;
 		ssl_session_timeout  5m;
@@ -70,11 +67,17 @@ http {
 		ssl_ciphers  HIGH:!aNULL:!MD5;
 		ssl_prefer_server_ciphers  on;
 		
-		proxy_bind <%= ENV['BUILDPACK_ROUTER_LISTEN_ADDRESS'] || 'off' %>;
-		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-		proxy_set_header Host $http_host;
-		proxy_redirect off;				
-		proxy_pass http://dyno_https;
+		location / {
+			proxy_bind <%= ENV['BUILDPACK_ROUTER_LISTEN_ADDRESS'] || 'off' %>;
+			proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+			proxy_set_header Host $http_host;
+			proxy_redirect off;
+	<% if ENV['BUILDPACK_ROUTER_USE_BACKEND_KEEPALIVE'] -%>
+			proxy_set_header Connection "";
+			proxy_http_version 1.1;
+	<% end -%>	
+			proxy_pass http://dyno_https;
+		}
 	}
 <% end -%>
 	server {
