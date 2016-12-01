@@ -3,7 +3,7 @@
 set -e
 
 mkdir -p "$1/bin/"
-cp "bin/nginx-${STACK:-cedar-14}" "$1/bin/nginx"
+cp "bin/nginx-${STACK:-cedar-14}" "$1/bin/nginx-byor"
 nginx_version=$(./bin/nginx-$STACK -V 2>&1 | head -1 | awk '{ print $NF }')
 echo "-----> router-buildpack: Installed ${nginx_version} to app/bin"
 cp bin/start-router "$1/bin/"

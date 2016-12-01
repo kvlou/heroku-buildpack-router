@@ -44,7 +44,7 @@ run-router() {
   config-gen
 
   # Start processes.
-  aux-start router SIGINT nginx -p . -c config/nginx.conf
+  aux-start router SIGINT nginx-byor -p . -c config/nginx.conf
   app-start SIGTERM "$@"
   pid=$!
 
