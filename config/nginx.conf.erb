@@ -17,7 +17,7 @@ http {
 	log_format	l2met	'source=buildpack-router method=$request_method path="$request_uri" host=$host unique#request_id=$unique_request_id measure#connect=${upstream_connect_time}s measure#service=${upstream_response_time}s status=$status sample#bytes=$bytes_sent';
 	access_log	/dev/stderr l2met;
 <% end -%>
-	error_log	/dev/stderr;
+	error_log	/dev/stderr <%= ENV['BUILDPACK_ROUTER_ERROR_LEVEL'] || 'warn' %>;
 
 	sendfile	on;
 	tcp_nodelay	on;
