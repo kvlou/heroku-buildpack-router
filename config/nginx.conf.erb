@@ -17,7 +17,7 @@ http {
 	log_format	l2met	'source=buildpack-router method=$request_method path="$request_uri" host=$host unique#request_id=$unique_request_id measure#connect=${upstream_connect_time}s measure#service=${upstream_response_time}s status=$status sample#bytes=$bytes_sent';
 	access_log	/dev/stderr l2met;
 <% end -%>
-	error_log	/dev/stderr;
+	error_log	/dev/stderr <%= ENV['BUILDPACK_ROUTER_ERROR_LEVEL'] || 'warn' %>;
 
 	sendfile	on;
 	tcp_nodelay	on;
@@ -34,6 +34,7 @@ http {
 	server {
 		listen <%= ENV['BUILDPACK_ROUTER_LISTEN_ADDRESS'] || '0.0.0.0' %>:<%= ENV['HEROKU_ROUTER_HTTP_PORT'] || 5001 %> proxy_protocol;
 		server_name  _;
+                client_max_body_size <%= ENV['BUILDPACK_ROUTER_CLIENT_MAX_BODY_SIZE'] || '1M' %>;
 		
 		location / {
 			proxy_bind <%= ENV['BUILDPACK_ROUTER_LISTEN_ADDRESS'] || 'off' %>;
@@ -58,7 +59,8 @@ http {
 	server {
 		listen <%= ENV['BUILDPACK_ROUTER_LISTEN_ADDRESS'] || '0.0.0.0' %>:<%= ENV['HEROKU_ROUTER_HTTPS_PORT'] || 5000 %> proxy_protocol ssl;
 		server_name _;
-		
+                client_max_body_size <%= ENV['BUILDPACK_ROUTER_CLIENT_MAX_BODY_SIZE'] || '1M' %>;
+	
 		ssl_certificate	 server.cert;
 		ssl_certificate_key server.key;
 
